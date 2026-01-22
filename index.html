@@ -276,6 +276,7 @@
         const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwscvvO9CIRSC67hQmJYTAg4ZfBnpTyYq-Ay9-5A6xRhGNssRwGSBUJ6_hS3K-2M_g/exec';
 
         // --- DATA ---
+        let chatInterval = null; // ป้องกัน ReferenceError
         let posts = []; 
         let sheetHeaders = []; 
 
@@ -342,16 +343,20 @@
                 }
 
                 if (postsData.length > 0) {
-                    // Overwrite posts completely
+                    // Overwrite posts completely with strict string conversion
                     posts = postsData.reverse().map((item, index) => ({
                         ...item,
-                        id: item.id || Date.now() + index,
+                        id: String(item.id || Date.now() + index),
+                        driverName: String(item.driverName || ''),
                         rating: item.rating || 0,
                         reviews: item.reviews || 0,
-                        lineId: item.lineId ? String(item.lineId) : "",
-                        province: item.province ? String(item.province) : "",
-                        route: item.route ? String(item.route) : "",
-                        vehicleType: item.vehicleType ? String(item.vehicleType) : "",
+                        price: String(item.price || ''),
+                        phone: String(item.phone || ''),
+                        lineId: String(item.lineId || ''),
+                        province: String(item.province || ''),
+                        route: String(item.route || ''),
+                        vehicleType: String(item.vehicleType || ''),
+                        description: String(item.description || ''),
                         // ปรับปรุงการตรวจสอบรูปภาพให้แสดงผลได้ง่ายขึ้น (เช็คแค่ว่าเป็น URL http)
                         image: (item.image && String(item.image).startsWith('http')) ? item.image : `https://placehold.co/600x400/818cf8/white?text=${item.vehicleType || 'Vehicle'}`
                     }));
@@ -469,126 +474,138 @@
         }
 
         function renderHome() {
-            const list = document.getElementById('post-list');
-            const loader = document.getElementById('loading-indicator');
-            
-            let contentHtml = '';
-
-            // 1. Filtering
-            const filtered = posts.filter(post => {
-                const safeStr = (val) => val ? String(val).toLowerCase() : '';
-                const searchKey = state.searchTerm.toLowerCase();
-                const provinceKey = state.filterProvince.toLowerCase();
-
-                const matchesSearch = 
-                    safeStr(post.province).includes(searchKey) || 
-                    safeStr(post.route).includes(searchKey) ||
-                    safeStr(post.vehicleType).includes(searchKey);
+            try {
+                const list = document.getElementById('post-list');
+                const loader = document.getElementById('loading-indicator');
                 
-                const matchesType = state.filterType === 'ทั้งหมด' || (post.vehicleType && safeStr(post.vehicleType).includes(state.filterType.toLowerCase())) || 
-                    (state.filterType === 'รถเช่า' && (safeStr(post.vehicleType).includes('เช่า') || safeStr(post.vehicleType).includes('eco') || safeStr(post.vehicleType).includes('supercar'))) ||
-                    (state.filterType === 'มอเตอร์ไซค์' && (safeStr(post.vehicleType).includes('มอเตอร์ไซค์') || safeStr(post.vehicleType).includes('จักรยาน'))) ||
-                    (state.filterType === 'รถกระบะ' && safeStr(post.vehicleType).includes('กระบะ'));
+                let contentHtml = '';
+
+                // Safe string conversion function (Robust)
+                const safeStr = (val) => {
+                  try {
+                    return String(val ?? '').toLowerCase();
+                  } catch {
+                    return '';
+                  }
+                };
+
+                // 1. Filtering
+                const filtered = posts.filter(post => {
+                    const searchKey = state.searchTerm.toLowerCase();
+                    const provinceKey = state.filterProvince.toLowerCase();
+
+                    const matchesSearch = 
+                        safeStr(post.province).includes(searchKey) || 
+                        safeStr(post.route).includes(searchKey) ||
+                        safeStr(post.vehicleType).includes(searchKey);
+                    
+                    const matchesType = state.filterType === 'ทั้งหมด' || (post.vehicleType && safeStr(post.vehicleType).includes(state.filterType.toLowerCase())) || 
+                        (state.filterType === 'รถเช่า' && (safeStr(post.vehicleType).includes('เช่า') || safeStr(post.vehicleType).includes('eco') || safeStr(post.vehicleType).includes('supercar'))) ||
+                        (state.filterType === 'มอเตอร์ไซค์' && (safeStr(post.vehicleType).includes('มอเตอร์ไซค์') || safeStr(post.vehicleType).includes('จักรยาน'))) ||
+                        (state.filterType === 'รถกระบะ' && safeStr(post.vehicleType).includes('กระบะ'));
+                    
+                    const matchesProvince = state.filterProvince === '' || safeStr(post.province) === provinceKey;
+
+                    return matchesSearch && matchesType && matchesProvince;
+                });
+
+                // 2. Pagination Logic
+                const totalItems = filtered.length;
+                const totalPages = Math.ceil(totalItems / state.itemsPerPage);
                 
-                const matchesProvince = state.filterProvince === '' || safeStr(post.province) === provinceKey;
+                // Adjust current page if it exceeds total pages
+                if (state.currentPage > totalPages && totalPages > 0) {
+                    state.currentPage = totalPages;
+                }
+                if (totalItems > 0 && state.currentPage < 1) {
+                    state.currentPage = 1;
+                }
 
-                return matchesSearch && matchesType && matchesProvince;
-            });
+                const startIndex = (state.currentPage - 1) * state.itemsPerPage;
+                const endIndex = startIndex + state.itemsPerPage;
+                const paginatedPosts = filtered.slice(startIndex, endIndex);
 
-            // 2. Pagination Logic
-            const totalItems = filtered.length;
-            const totalPages = Math.ceil(totalItems / state.itemsPerPage);
-            
-            // Adjust current page if it exceeds total pages
-            if (state.currentPage > totalPages && totalPages > 0) {
-                state.currentPage = totalPages;
-            }
-            if (totalItems > 0 && state.currentPage < 1) {
-                state.currentPage = 1;
-            }
-
-            const startIndex = (state.currentPage - 1) * state.itemsPerPage;
-            const endIndex = startIndex + state.itemsPerPage;
-            const paginatedPosts = filtered.slice(startIndex, endIndex);
-
-            // 3. Rendering
-            if (totalItems === 0) {
-                contentHtml = `
-                    <div class="flex flex-col items-center justify-center text-gray-400 mt-20 gap-3">
-                        <i data-lucide="search" width="48" class="opacity-20"></i>
-                        <p>ไม่พบรายการที่ค้นหา</p>
-                    </div>
-                `;
-            } else {
-                contentHtml = paginatedPosts.map(post => `
-                    <div onclick="selectPost('${post.id}')" class="group bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 overflow-hidden active:scale-[0.99] transition-all cursor-pointer fade-in">
-                        <div class="h-40 overflow-hidden relative">
-                            <!-- เพิ่ม referrerpolicy="no-referrer" เพื่อช่วยเรื่องการโหลดรูปจาก Drive -->
-                            <img src="${post.image}" referrerpolicy="no-referrer" alt="${post.vehicleType}" class="w-full h-full object-cover transition-transform group-hover:scale-105" onerror="this.src='https://placehold.co/600x400/e2e8f0/gray?text=No+Image'"/>
-                            <div class="absolute top-3 left-3 flex gap-2">
-                                <span class="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/20">
-                                    ${post.vehicleType}
-                                </span>
-                            </div>
-                            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent h-12"></div>
-                            <div class="absolute bottom-2 right-3 flex items-center gap-1 text-white text-xs font-bold bg-yellow-500/90 px-2 py-0.5 rounded-md backdrop-blur-sm">
-                                <i data-lucide="star" width="10" fill="currentColor"></i> ${post.rating > 0 ? post.rating : 'New'}
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <h3 class="font-bold text-gray-800 text-lg leading-tight line-clamp-1 mb-2">${post.driverName}</h3>
-                            <div class="space-y-1.5 mb-3">
-                                <p class="text-gray-500 text-xs flex items-center gap-1.5">
-                                    <i data-lucide="map-pin" width="14" class="text-blue-500"></i>
-                                    <span class="line-clamp-1">${post.province}</span>
-                                </p>
-                                <p class="text-gray-500 text-xs flex items-center gap-1.5">
-                                    <i data-lucide="truck" width="14" class="text-green-500"></i>
-                                    <span class="font-medium text-gray-700 line-clamp-1">เส้นทาง: ${post.route}</span>
-                                </p>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-gray-100 pt-3 mt-1">
-                                <div>
-                                    <p class="text-[10px] text-gray-400">ราคาเริ่มต้น</p>
-                                    <span class="text-blue-600 font-bold text-lg">฿${post.price}</span>
-                                </div>
-                                <span class="text-blue-500 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-semibold group-hover:bg-blue-100 transition-colors">ดูรายละเอียด</span>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-
-                // 4. Pagination Controls HTML
-                if (totalPages > 1) {
-                    contentHtml += `
-                        <div class="flex justify-center items-center gap-4 mt-6 py-4">
-                            <button onclick="changePage(-1)" ${state.currentPage === 1 ? 'disabled' : ''} class="flex items-center gap-1 px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                                <i data-lucide="chevron-left" width="16"></i> ย้อนกลับ
-                            </button>
-                            
-                            <span class="text-gray-600 text-sm font-medium">
-                                หน้า ${state.currentPage} / ${totalPages}
-                            </span>
-                            
-                            <button onclick="changePage(1)" ${state.currentPage === totalPages ? 'disabled' : ''} class="flex items-center gap-1 px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                                ถัดไป <i data-lucide="chevron-right" width="16"></i>
-                            </button>
+                // 3. Rendering
+                if (totalItems === 0) {
+                    contentHtml = `
+                        <div class="flex flex-col items-center justify-center text-gray-400 mt-20 gap-3">
+                            <i data-lucide="search" width="48" class="opacity-20"></i>
+                            <p>ไม่พบรายการที่ค้นหา</p>
                         </div>
                     `;
-                }
-            }
-            
-            // Clean slate injection
-            list.innerHTML = ''; 
-            if(loader) list.appendChild(loader); // Keep loader reference
-            list.insertAdjacentHTML('beforeend', contentHtml);
-            
-            // Scroll to top of list if changing pages (optional but good UX)
-            if (state.currentPage > 1 || totalPages > 1) {
-                list.scrollTop = 0;
-            }
+                } else {
+                    contentHtml = paginatedPosts.map(post => `
+                        <div onclick="selectPost('${post.id}')" class="group bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 overflow-hidden active:scale-[0.99] transition-all cursor-pointer fade-in">
+                            <div class="h-40 overflow-hidden relative">
+                                <!-- เพิ่ม referrerpolicy="no-referrer" เพื่อช่วยเรื่องการโหลดรูปจาก Drive -->
+                                <img src="${post.image}" referrerpolicy="no-referrer" alt="${post.vehicleType}" class="w-full h-full object-cover transition-transform group-hover:scale-105" onerror="this.src='https://placehold.co/600x400/e2e8f0/gray?text=No+Image'"/>
+                                <div class="absolute top-3 left-3 flex gap-2">
+                                    <span class="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/20">
+                                        ${post.vehicleType}
+                                    </span>
+                                </div>
+                                <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent h-12"></div>
+                                <div class="absolute bottom-2 right-3 flex items-center gap-1 text-white text-xs font-bold bg-yellow-500/90 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                                    <i data-lucide="star" width="10" fill="currentColor"></i> ${post.rating > 0 ? post.rating : 'New'}
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-gray-800 text-lg leading-tight line-clamp-1 mb-2">${post.driverName}</h3>
+                                <div class="space-y-1.5 mb-3">
+                                    <p class="text-gray-500 text-xs flex items-center gap-1.5">
+                                        <i data-lucide="map-pin" width="14" class="text-blue-500"></i>
+                                        <span class="line-clamp-1">${post.province}</span>
+                                    </p>
+                                    <p class="text-gray-500 text-xs flex items-center gap-1.5">
+                                        <i data-lucide="truck" width="14" class="text-green-500"></i>
+                                        <span class="font-medium text-gray-700 line-clamp-1">เส้นทาง: ${post.route}</span>
+                                    </p>
+                                </div>
+                                <div class="flex justify-between items-center border-t border-gray-100 pt-3 mt-1">
+                                    <div>
+                                        <p class="text-[10px] text-gray-400">ราคาเริ่มต้น</p>
+                                        <span class="text-blue-600 font-bold text-lg">฿${post.price}</span>
+                                    </div>
+                                    <span class="text-blue-500 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-semibold group-hover:bg-blue-100 transition-colors">ดูรายละเอียด</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
 
-            lucide.createIcons();
+                    // 4. Pagination Controls HTML
+                    if (totalPages > 1) {
+                        contentHtml += `
+                            <div class="flex justify-center items-center gap-4 mt-6 py-4">
+                                <button onclick="changePage(-1)" ${state.currentPage === 1 ? 'disabled' : ''} class="flex items-center gap-1 px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                    <i data-lucide="chevron-left" width="16"></i> ย้อนกลับ
+                                </button>
+                                
+                                <span class="text-gray-600 text-sm font-medium">
+                                    หน้า ${state.currentPage} / ${totalPages}
+                                </span>
+                                
+                                <button onclick="changePage(1)" ${state.currentPage === totalPages ? 'disabled' : ''} class="flex items-center gap-1 px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                    ถัดไป <i data-lucide="chevron-right" width="16"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Clean slate injection
+                list.innerHTML = ''; 
+                if(loader) list.appendChild(loader); // Keep loader reference
+                list.insertAdjacentHTML('beforeend', contentHtml);
+                
+                // Scroll to top of list if changing pages (optional but good UX)
+                if (state.currentPage > 1 || totalPages > 1) {
+                    list.scrollTop = 0;
+                }
+
+                lucide.createIcons();
+            } catch (e) {
+                console.error("renderHome crash:", e);
+            }
         }
 
         // --- PAGINATION HELPERS ---
@@ -602,20 +619,11 @@
             const container = document.getElementById('detail-content');
             
             // Logic สำหรับปุ่มแชท
-            let chatButtonHtml = '';
-            if (post.lineId && post.lineId.trim() !== '') {
-                chatButtonHtml = `
-                    <a href="https://line.me/ti/p/~${post.lineId}" target="_blank" class="flex-1 flex items-center justify-center gap-2 bg-[#06C755] text-white font-bold py-3 rounded-xl shadow-lg shadow-green-200 active:bg-green-600 active:scale-[0.98] transition-all">
-                        <i data-lucide="message-circle" width="20"></i> ทัก LINE
-                    </a>
-                `;
-            } else {
-                chatButtonHtml = `
-                    <button onclick="startChat()" class="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 active:bg-blue-700 active:scale-[0.98] transition-all">
-                        <i data-lucide="message-square" width="20"></i> แชท (ในแอป)
-                    </button>
-                `;
-            }
+            let chatButtonHtml = `
+                <button onclick="startChat()" class="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 active:bg-blue-700 active:scale-[0.98] transition-all">
+                    <i data-lucide="message-square" width="20"></i> แชท
+                </button>
+            `;
 
             container.innerHTML = `
                 <!-- Image Header -->
@@ -922,7 +930,8 @@
 
         // --- INIT ---
         renderFilterChips();
-        renderHome();
+        // Removed initial renderHome() to prevent empty state flash before fetch completes
+        // renderHome(); 
         lucide.createIcons();
         fetchPostsFromGAS();
 
