@@ -619,11 +619,15 @@
             const container = document.getElementById('detail-content');
             
             // Logic สำหรับปุ่มแชท
-            let chatButtonHtml = `
-                <button onclick="startChat()" class="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 active:bg-blue-700 active:scale-[0.98] transition-all">
-                    <i data-lucide="message-square" width="20"></i> แชท
-                </button>
-            `;
+            let chatButtonHtml = post.lineId ? `
+                <a 
+                    href="https://line.me/R/ti/p/~${post.lineId}"
+                    target="_blank"
+                    class="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg active:scale-[0.98] transition-all"
+                >
+                    <i data-lucide="message-circle" width="20"></i> แชท LINE
+                </a>
+            ` : '';
 
             container.innerHTML = `
                 <!-- Image Header -->
