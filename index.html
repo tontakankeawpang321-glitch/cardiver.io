@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarHire Connect</title>
+    <title>บริการรถรับจ้าง</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -49,6 +49,14 @@
             font-family: 'Sarabun', sans-serif !important;
             font-size: 0.9rem !important;
         }
+        /* Custom Button Gradient Animation */
+        .btn-gradient {
+            background-size: 200% auto;
+            transition: 0.5s;
+        }
+        .btn-gradient:hover {
+            background-position: right center;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans flex justify-center items-center p-4 md:p-0">
@@ -61,14 +69,14 @@
             <!-- Header -->
             <header class="bg-white px-4 pt-4 pb-2 shadow-sm sticky top-0 z-20">
                 <div class="flex justify-between items-center mb-3">
-                    <h1 class="text-xl font-bold text-blue-800 flex items-center gap-2">
-                        <div class="bg-blue-600 p-1.5 rounded-lg text-white">
+                    <h1 class="text-xl font-bold text-gray-800 flex items-center gap-3">
+                        <div class="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-xl text-white shadow-md">
                             <i data-lucide="truck" width="20" height="20"></i>
                         </div>
-                        รถ <span class="text-blue-500">รับจ้าง</span>
+                        <span class="text-lg tracking-tight">บริการรถรับจ้าง</span>
                     </h1>
                     <!-- Refresh Button -->
-                    <button onclick="fetchPostsFromGAS()" class="text-gray-400 hover:text-blue-600 p-1">
+                    <button onclick="fetchPostsFromGAS()" class="bg-gray-100 hover:bg-blue-50 text-gray-500 hover:text-blue-600 p-2 rounded-full transition-colors">
                         <i data-lucide="refresh-cw" width="18"></i>
                     </button>
                 </div>
@@ -113,7 +121,7 @@
             </div>
 
             <!-- FAB (Create Post) -->
-            <button onclick="router.navigate('create')" class="absolute bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-blue-600 to-blue-500 text-white rounded-full shadow-lg shadow-blue-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-20">
+            <button onclick="router.navigate('create')" class="absolute bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-full shadow-lg shadow-blue-300 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-20">
                 <i data-lucide="plus" width="28" stroke-width="2.5"></i>
             </button>
         </div>
@@ -147,41 +155,45 @@
 
             <div class="flex-1 overflow-y-auto p-4">
                 <form id="create-form" class="space-y-6">
-                    <!-- Image Upload -->
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                            <i data-lucide="camera" class="text-blue-500" width="16"></i> รูปภาพ
+                    <!-- Image Upload (Redesigned) -->
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                        <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                            <i data-lucide="image" class="text-blue-500" width="18"></i> รูปภาพประกอบ
                         </h3>
                         
-                        <div id="image-preview-container" class="hidden relative h-48 w-full rounded-xl overflow-hidden border border-gray-200">
+                        <div id="image-preview-container" class="hidden relative h-56 w-full rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                             <img id="image-preview" src="" alt="Preview" class="w-full h-full object-cover">
-                            <button type="button" id="remove-image-btn" class="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-colors">
-                                <i data-lucide="x" width="16"></i>
+                            <button type="button" id="remove-image-btn" class="absolute top-3 right-3 bg-red-500/90 text-white p-2 rounded-full shadow-lg hover:bg-red-600 transition-colors backdrop-blur-sm">
+                                <i data-lucide="trash-2" width="18"></i>
                             </button>
                         </div>
 
-                        <div id="image-upload-box" class="relative h-40 w-full border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-gray-50 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group">
+                        <div id="image-upload-box" class="relative h-48 w-full border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center text-blue-400 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-400 transition-all duration-300 cursor-pointer group overflow-hidden">
                             <input type="file" id="image-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <div class="bg-white p-3 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform">
-                                <i data-lucide="camera" class="text-blue-500" width="24"></i>
+                            
+                            <div class="bg-white p-4 rounded-full shadow-md mb-3 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                                <i data-lucide="image-plus" class="text-blue-500" width="28"></i>
                             </div>
-                            <span class="text-xs font-medium group-hover:text-blue-600">อัปโหลดรูปภาพ</span>
+                            <span class="text-sm font-semibold text-blue-600 group-hover:text-blue-700">แตะเพื่อเพิ่มรูปภาพ</span>
+                            <span class="text-xs text-blue-400 mt-1">รองรับ JPG, PNG</span>
                         </div>
                     </div>
 
                     <!-- General Info -->
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-                        <h3 class="text-sm font-bold text-gray-800 mb-1 border-b pb-2">ข้อมูลทั่วไป</h3>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 space-y-5">
+                        <h3 class="text-sm font-bold text-gray-800 mb-2 border-b pb-2 flex items-center gap-2">
+                            <i data-lucide="info" class="text-blue-500" width="16"></i> ข้อมูลทั่วไป
+                        </h3>
                         
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">ชื่อผู้ให้บริการ / บริษัท</label>
-                            <input required name="driverName" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all" placeholder="เช่น สมหมาย ขนส่งไว">
+                            <label class="text-xs font-semibold text-gray-500 mb-1.5 block">ชื่อผู้ให้บริการ / บริษัท</label>
+                            <input required name="driverName" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all" placeholder="เช่น สมหมาย ขนส่งไว">
                         </div>
 
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">ประเภทรถ</label>
+                            <label class="text-xs font-semibold text-gray-500 mb-1.5 block">ประเภทรถ</label>
                             <div class="relative">
-                                <select name="vehicleType" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm appearance-none focus:ring-2 focus:ring-blue-500 outline-none">
+                                <select name="vehicleType" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm appearance-none focus:ring-2 focus:ring-blue-500 outline-none">
                                     <optgroup label="รถเช่า (รายวัน/รายเดือน)">
                                         <option value="รถเก๋ง (เช่าขับเอง)">รถเก๋ง (เช่าขับเอง)</option>
                                         <option value="รถ ECO Car">รถ ECO Car</option>
@@ -212,56 +224,60 @@
                                         <option value="รถสไลด์">รถสไลด์</option>
                                     </optgroup>
                                 </select>
-                                <div class="absolute right-3 top-3 pointer-events-none text-gray-500">▼</div>
+                                <i data-lucide="chevron-down" class="absolute right-3 top-3.5 text-gray-400 pointer-events-none" width="16"></i>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs font-medium text-gray-500 mb-1 block">ราคาเริ่มต้น (บาท)</label>
-                                <input required name="price" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น 500">
+                                <label class="text-xs font-semibold text-gray-500 mb-1.5 block">ราคาเริ่มต้น (บาท)</label>
+                                <input required name="price" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น 500">
                             </div>
                             <div>
-                                <label class="text-xs font-medium text-gray-500 mb-1 block">จังหวัดต้นทาง</label>
-                                <input required name="province" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="กทม.">
+                                <label class="text-xs font-semibold text-gray-500 mb-1.5 block">จังหวัดต้นทาง</label>
+                                <input required name="province" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="กทม.">
                             </div>
                         </div>
                         
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">เส้นทางวิ่งประจำ / เงื่อนไข</label>
-                            <input required name="route" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น กทม. - ชลบุรี">
+                            <label class="text-xs font-semibold text-gray-500 mb-1.5 block">เส้นทางวิ่งประจำ / เงื่อนไข</label>
+                            <input required name="route" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น กทม. - ชลบุรี">
                         </div>
                     </div>
 
                     <!-- Contact -->
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-                        <h3 class="text-sm font-bold text-gray-800 mb-1 border-b pb-2">รายละเอียดการติดต่อ</h3>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 space-y-5">
+                        <h3 class="text-sm font-bold text-gray-800 mb-2 border-b pb-2 flex items-center gap-2">
+                            <i data-lucide="phone-call" class="text-blue-500" width="16"></i> ข้อมูลติดต่อ
+                        </h3>
                         
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">เบอร์โทรศัพท์</label>
-                            <input required name="phone" type="tel" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="08X-XXX-XXXX">
+                            <label class="text-xs font-semibold text-gray-500 mb-1.5 block">เบอร์โทรศัพท์</label>
+                            <input required name="phone" type="tel" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="08X-XXX-XXXX">
                         </div>
 
                         <!-- เพิ่มช่อง LINE ID -->
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block flex items-center gap-1">
+                            <label class="text-xs font-semibold text-gray-500 mb-1.5 block flex items-center gap-1">
                                 LINE ID <span class="text-blue-500 text-[10px]">(สำหรับให้ลูกค้าทักแชท)</span>
                             </label>
                             <div class="relative">
-                                <i data-lucide="message-circle" class="absolute left-3 top-3 text-green-500" width="16"></i>
-                                <input name="lineId" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 pl-10 text-sm focus:ring-2 focus:ring-green-500 outline-none" placeholder="เช่น somchai.service">
+                                <i data-lucide="message-circle" class="absolute left-3 top-3 text-green-500" width="18"></i>
+                                <input name="lineId" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 pl-10 text-sm focus:ring-2 focus:ring-green-500 outline-none" placeholder="เช่น somchai.service">
                             </div>
                         </div>
 
                         <div>
-                            <label class="text-xs font-medium text-gray-500 mb-1 block">รายละเอียดเพิ่มเติม</label>
-                            <textarea name="description" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="ระบุรายละเอียดบริการ..."></textarea>
+                            <label class="text-xs font-semibold text-gray-500 mb-1.5 block">รายละเอียดเพิ่มเติม</label>
+                            <textarea name="description" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="ระบุรายละเอียดบริการ..."></textarea>
                         </div>
                     </div>
 
-                    <div class="pb-6">
-                        <button type="submit" id="submit-btn" class="w-full py-3.5 rounded-xl text-white font-bold flex justify-center items-center gap-2 shadow-lg shadow-blue-200 transition-all active:scale-[0.98] bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600">
-                            <i data-lucide="save" width="20"></i> บันทึกข้อมูล
+                    <div class="pb-8 pt-2">
+                        <!-- Redesigned Save Button -->
+                        <button type="submit" id="submit-btn" class="btn-gradient w-full py-4 rounded-2xl text-white font-bold text-lg flex justify-center items-center gap-3 shadow-xl shadow-blue-200 hover:shadow-blue-300 active:scale-[0.98] bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-600">
+                            <i data-lucide="check-circle" width="24"></i>
+                            ลงประกาศทันที
                         </button>
                     </div>
                 </form>
@@ -276,18 +292,18 @@
         const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwscvvO9CIRSC67hQmJYTAg4ZfBnpTyYq-Ay9-5A6xRhGNssRwGSBUJ6_hS3K-2M_g/exec';
 
         // --- DATA ---
-        let chatInterval = null; // ป้องกัน ReferenceError
+        let chatInterval = null; 
         let posts = []; 
         let sheetHeaders = []; 
 
         let state = {
             filterType: 'ทั้งหมด',
-            filterProvince: '', // New Province Filter
+            filterProvince: '', 
             searchTerm: '',
             selectedPost: null,
             chatMessages: [],
-            currentPage: 1, // Start Page
-            itemsPerPage: 5 // Items per page
+            currentPage: 1,
+            itemsPerPage: 5
         };
 
         const vehicleFilters = [
@@ -322,7 +338,6 @@
             const list = document.getElementById('post-list');
             const loader = document.getElementById('loading-indicator');
             
-            // Clear current list to prevent data persistence visual glitch
             list.innerHTML = '';
             if(loader) {
                 list.appendChild(loader);
@@ -343,30 +358,25 @@
                 }
 
                 if (postsData.length > 0) {
-                    // Overwrite posts completely with strict string conversion
                     posts = postsData.reverse().map((item, index) => ({
                         ...item,
                         id: String(item.id || Date.now() + index),
                         driverName: String(item.driverName || ''),
                         rating: item.rating || 0,
                         reviews: item.reviews || 0,
-                        price: String(item.price || ''),
-                        phone: String(item.phone || ''),
-                        lineId: String(item.lineId || ''),
-                        province: String(item.province || ''),
-                        route: String(item.route || ''),
-                        vehicleType: String(item.vehicleType || ''),
-                        description: String(item.description || ''),
+                        lineId: item.lineId ? String(item.lineId) : "",
+                        province: item.province ? String(item.province) : "",
+                        route: item.route ? String(item.route) : "",
+                        vehicleType: item.vehicleType ? String(item.vehicleType) : "",
                         // ปรับปรุงการตรวจสอบรูปภาพให้แสดงผลได้ง่ายขึ้น (เช็คแค่ว่าเป็น URL http)
                         image: (item.image && String(item.image).startsWith('http')) ? item.image : `https://placehold.co/600x400/818cf8/white?text=${item.vehicleType || 'Vehicle'}`
                     }));
                     console.log("Loaded posts:", posts);
                     
-                    // Update Province Filter Dropdown
                     populateProvinceFilter();
                 } else {
                     console.log("No data from GAS");
-                    posts = []; // Clear posts if empty
+                    posts = []; 
                 }
             } catch (error) {
                 console.error("Error fetching from GAS:", error);
@@ -434,16 +444,13 @@
 
         function populateProvinceFilter() {
             const provinceSelect = document.getElementById('province-filter');
-            // Get unique, non-empty provinces
             const uniqueProvinces = [...new Set(posts.map(p => p.province ? p.province.trim() : "").filter(p => p !== ""))].sort();
             
-            // Generate options
             let optionsHtml = '<option value="">ทุกจังหวัด</option>';
             uniqueProvinces.forEach(prov => {
                 optionsHtml += `<option value="${prov}">${prov}</option>`;
             });
             
-            // Save current selection (if exists in new list) or reset
             const currentSelection = provinceSelect.value;
             provinceSelect.innerHTML = optionsHtml;
             
@@ -451,7 +458,7 @@
                 provinceSelect.value = currentSelection;
             } else {
                 provinceSelect.value = "";
-                state.filterProvince = ""; // Reset filter state if province no longer exists
+                state.filterProvince = "";
             }
         }
 
@@ -480,7 +487,6 @@
                 
                 let contentHtml = '';
 
-                // Safe string conversion function (Robust)
                 const safeStr = (val) => {
                   try {
                     return String(val ?? '').toLowerCase();
@@ -489,7 +495,6 @@
                   }
                 };
 
-                // 1. Filtering
                 const filtered = posts.filter(post => {
                     const searchKey = state.searchTerm.toLowerCase();
                     const provinceKey = state.filterProvince.toLowerCase();
@@ -509,11 +514,9 @@
                     return matchesSearch && matchesType && matchesProvince;
                 });
 
-                // 2. Pagination Logic
                 const totalItems = filtered.length;
                 const totalPages = Math.ceil(totalItems / state.itemsPerPage);
                 
-                // Adjust current page if it exceeds total pages
                 if (state.currentPage > totalPages && totalPages > 0) {
                     state.currentPage = totalPages;
                 }
@@ -525,7 +528,6 @@
                 const endIndex = startIndex + state.itemsPerPage;
                 const paginatedPosts = filtered.slice(startIndex, endIndex);
 
-                // 3. Rendering
                 if (totalItems === 0) {
                     contentHtml = `
                         <div class="flex flex-col items-center justify-center text-gray-400 mt-20 gap-3">
@@ -537,7 +539,6 @@
                     contentHtml = paginatedPosts.map(post => `
                         <div onclick="selectPost('${post.id}')" class="group bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 overflow-hidden active:scale-[0.99] transition-all cursor-pointer fade-in">
                             <div class="h-40 overflow-hidden relative">
-                                <!-- เพิ่ม referrerpolicy="no-referrer" เพื่อช่วยเรื่องการโหลดรูปจาก Drive -->
                                 <img src="${post.image}" referrerpolicy="no-referrer" alt="${post.vehicleType}" class="w-full h-full object-cover transition-transform group-hover:scale-105" onerror="this.src='https://placehold.co/600x400/e2e8f0/gray?text=No+Image'"/>
                                 <div class="absolute top-3 left-3 flex gap-2">
                                     <span class="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/20">
@@ -572,7 +573,6 @@
                         </div>
                     `).join('');
 
-                    // 4. Pagination Controls HTML
                     if (totalPages > 1) {
                         contentHtml += `
                             <div class="flex justify-center items-center gap-4 mt-6 py-4">
@@ -592,12 +592,10 @@
                     }
                 }
                 
-                // Clean slate injection
                 list.innerHTML = ''; 
-                if(loader) list.appendChild(loader); // Keep loader reference
+                if(loader) list.appendChild(loader); 
                 list.insertAdjacentHTML('beforeend', contentHtml);
                 
-                // Scroll to top of list if changing pages (optional but good UX)
                 if (state.currentPage > 1 || totalPages > 1) {
                     list.scrollTop = 0;
                 }
@@ -608,7 +606,6 @@
             }
         }
 
-        // --- PAGINATION HELPERS ---
         function changePage(direction) {
             if (posts.length === 0) return;
             state.currentPage += direction;
@@ -618,7 +615,6 @@
         function renderDetail(post) {
             const container = document.getElementById('detail-content');
             
-            // Logic สำหรับปุ่มแชท
             let chatButtonHtml = post.lineId ? `
                 <a 
                     href="https://line.me/R/ti/p/~${post.lineId}"
@@ -706,8 +702,6 @@
             lucide.createIcons();
         }
 
-        // --- CHAT LOGIC ---
-        
         async function loadMessages() {
             if (!state.selectedPost) return;
             try {
@@ -817,7 +811,6 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // --- CREATE POST LOGIC ---
         let createFormData = { image: null };
 
         function resetCreateForm() {
@@ -856,14 +849,17 @@
             const btn = document.getElementById('submit-btn');
             const originalText = btn.innerHTML;
             
-            btn.innerHTML = 'กำลังบันทึกไปยัง Google Sheet...';
-            btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    กำลังบันทึก...
+                </div>
+            `;
+            btn.classList.add('cursor-not-allowed', 'opacity-80');
             btn.disabled = true;
             
             const form = new FormData(e.target);
             const newPost = {
-                // สร้าง ID ใหม่ถ้าเป็น create หรือใช้ ID เดิมถ้า update (ในอนาคต)
-                // สำหรับ create ใช้ Date.now() ไปก่อนใน client side แต่จริงๆ GAS จะสร้างทับ
                 driverName: form.get('driverName'),
                 vehicleType: form.get('vehicleType'),
                 price: form.get('price'),
@@ -883,31 +879,41 @@
                     body: JSON.stringify(newPost)
                 });
 
-                alert("บันทึกข้อมูลเรียบร้อย!");
+                await Swal.fire({
+                    title: 'บันทึกสำเร็จ!',
+                    text: 'ข้อมูลประกาศของคุณถูกบันทึกเรียบร้อยแล้ว',
+                    icon: 'success',
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#3b82f6'
+                });
+
                 resetCreateForm();
                 router.navigate('home');
                 fetchPostsFromGAS();
 
             } catch (error) {
                 console.error("Error saving post:", error);
-                alert("เกิดข้อผิดพลาดในการบันทึก: " + error.message);
+                await Swal.fire({
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message,
+                    icon: 'error',
+                    confirmButtonText: 'ลองใหม่'
+                });
             } finally {
                 btn.innerHTML = originalText;
-                btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                btn.classList.remove('cursor-not-allowed', 'opacity-80');
                 btn.disabled = false;
             }
         });
 
-        // --- HELPERS ---
         function setFilter(type) {
             state.filterType = type;
-            state.currentPage = 1; // Reset to page 1
+            state.currentPage = 1; 
             renderFilterChips();
             renderHome();
         }
 
         function selectPost(id) {
-            // id ที่รับมาอาจเป็น string หรือ number ต้องเทียบแบบยืดหยุ่น
             const post = posts.find(p => p.id == id);
             if (post) {
                 router.navigate('detail', post);
@@ -922,20 +928,17 @@
 
         document.getElementById('search-input').addEventListener('input', (e) => {
             state.searchTerm = e.target.value;
-            state.currentPage = 1; // Reset to page 1
+            state.currentPage = 1; 
             renderHome();
         });
 
         document.getElementById('province-filter').addEventListener('change', (e) => {
             state.filterProvince = e.target.value;
-            state.currentPage = 1; // Reset to page 1
+            state.currentPage = 1; 
             renderHome();
         });
 
-        // --- INIT ---
         renderFilterChips();
-        // Removed initial renderHome() to prevent empty state flash before fetch completes
-        // renderHome(); 
         lucide.createIcons();
         fetchPostsFromGAS();
 
